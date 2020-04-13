@@ -4,26 +4,6 @@ import Tree from './tree'
 import cloneDeep from 'lodash/cloneDeep'
 import './Layout.css'
 
-//  This is a conversion that was made from purejs to react and now in vue
-//
-// I know its not ideal to mess with the DOM, but it doesn't seem to exist a
-// clean way to reparent components in react/vue without losing DOM state.
-// My objective here was keep updating views either in DOM (e.g input box) or
-// simple on a component as shown on <Clock /> example
-//
-// How this works:
-//  * we receive a list of components that can be usable as views
-//  * The state contains a tree with nodes pointing to the viewId
-//  * render() will render all views inside a hidden DOM element with
-// specific DOM properties and will render the tree elements with designated
-// props
-//  * componentDidUpdate, componentDidMount grab all views from hidden element
-//  and place it on respective tree components as soon as we render(again) the
-//  view components are moved back to the original place
-//
-//
-
-// DOM
 function checkAttach (targetDom, e, amount) {
   amount = amount || 33
   var size = amount / 100
@@ -69,14 +49,6 @@ export default Vue.component('Layout', {
     splits () {
       this.state.nodes = this.calcSplits()
     }
-  },
-  beforeUpdate () {
-    if (!this.$refs.container) { return }
-    var els = this.$refs.container.querySelectorAll('[target-view]')
-    Array.from(els).forEach((e, i) => {
-      var el = this.$refs.container.querySelector('[src-view=' + e.getAttribute('target-view') + ']')
-      el.appendChild(e.children[0])
-    })
   },
   methods: {
     // Transform input into internal format
@@ -254,19 +226,7 @@ export default Vue.component('Layout', {
     }
 
   },
-  render () {
-    // DOM VUE/REACT HACK
-    this.$nextTick(() => {
-      this.$emit('layout:begin')
-      var els = this.$refs.container.querySelectorAll('[target-view]')
-      Array.from(els).forEach((e, i) => {
-        const srcView = this.$refs.container.querySelector('[src-view=' + e.getAttribute('target-view') + ']')
-        if (!srcView) return
-        e.appendChild(srcView.children[0])
-      })
-      this.$emit('layout:complete')
-    })
-
+  render () {    
     // Layout renderer, build children
     const walk = (node) => {
       switch (node.type) {
@@ -287,7 +247,7 @@ export default Vue.component('Layout', {
     }
     const tree = walk(this.state.nodes[0])
     const layoutClass = [
-      'layout-container',
+      'split-layout-container',
       this.edit ? 'edit' : ''
     ]
     return (
@@ -307,12 +267,7 @@ export default Vue.component('Layout', {
               target-view={'view-' + this.drag.node.viewId}
             />
           }
-        </div>
-        <div style={{display: 'none'}}>
-          {this.$slots.default.filter(v => v.tag !== undefined).map((view, i) => {
-            return (<div key={view.key || i} src-view={'view-' + (view.key || i)}> {view} </div>)
-          })}
-        </div>
+        </div>        
       </div>
     )
   }
