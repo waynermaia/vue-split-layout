@@ -50,9 +50,10 @@ export default Vue.component('Layout', {
       this.state.nodes = this.calcSplits()
     }
   },
+
   methods: {
     // Transform input into internal format
-    calcSplits () {
+    calcSplits() {
       const root = []
       const tree = Tree.from(root)
       const walk = (node) => {
@@ -69,8 +70,9 @@ export default Vue.component('Layout', {
 
       return root
     },
+
     // wait on this
-    onSplitResize (e, split, size) {
+    onSplitResize(e, split, size) {
       const nodeId = split.props['node-id']
       this.setState(ps => {
         const node = Tree.from(ps.nodes).findById(nodeId)
@@ -78,7 +80,8 @@ export default Vue.component('Layout', {
         return ps
       })
     },
-    previewPane (attach, targetDom, amount) {
+
+    previewPane(attach, targetDom, amount) {
       if (attach === -1) {
         this.$refs.preview.style.opacity = 0
         return
@@ -115,7 +118,8 @@ export default Vue.component('Layout', {
         this.$refs.preview.style[k] = previewPos[k] + 'px'
       }
     },
-    onViewDragStart (e) { // We could pass dom here?
+
+    onViewDragStart(e) { // We could pass dom here?
       if (e.button !== 0) return
 
       const nodeIdAttr = e.target.hasAttribute('node-id')
@@ -167,7 +171,7 @@ export default Vue.component('Layout', {
       document.addEventListener('mouseup', this.onViewDrop)
     },
 
-    onViewDrag (e) {
+    onViewDrag(e) {
       if (e.button !== 0) return
       e.preventDefault()
       e.stopPropagation()
@@ -201,7 +205,8 @@ export default Vue.component('Layout', {
       }
       this.previewPane(attach, viewDom)
     },
-    onViewDrop (e) {
+
+    onViewDrop(e) {
       if (e.button !== 0) return
       document.removeEventListener('mousemove', this.onViewDrag)
       document.removeEventListener('mouseup', this.onViewDrop)
@@ -223,10 +228,15 @@ export default Vue.component('Layout', {
       var node = tree.findById(nodeId)
       tree.attachChild(node, attach, this.drag.node)
       this.drag = null
+    }    
+  },
+
+  render () {   
+    
+    const onMouseDown = () => {
+      this.onViewDragStart()
     }
 
-  },
-  render () {    
     // Layout renderer, build children
     const walk = (node) => {
       switch (node.type) {
@@ -240,7 +250,7 @@ export default Vue.component('Layout', {
           )
         default:
           if (this.edit) {
-            return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId} onmousedown={this.onViewDragStart}></div>)
+            return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId} onmousedown={onMouseDown}></div>)
           }
           return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId}></div>)
       }
