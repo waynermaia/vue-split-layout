@@ -4,26 +4,6 @@ import Tree from './tree'
 import cloneDeep from 'lodash/cloneDeep'
 import './Layout.css'
 
-//  This is a conversion that was made from purejs to react and now in vue
-//
-// I know its not ideal to mess with the DOM, but it doesn't seem to exist a
-// clean way to reparent components in react/vue without losing DOM state.
-// My objective here was keep updating views either in DOM (e.g input box) or
-// simple on a component as shown on <Clock /> example
-//
-// How this works:
-//  * we receive a list of components that can be usable as views
-//  * The state contains a tree with nodes pointing to the viewId
-//  * render() will render all views inside a hidden DOM element with
-// specific DOM properties and will render the tree elements with designated
-// props
-//  * componentDidUpdate, componentDidMount grab all views from hidden element
-//  and place it on respective tree components as soon as we render(again) the
-//  view components are moved back to the original place
-//
-//
-
-// DOM
 function checkAttach (targetDom, e, amount) {
   amount = amount || 33
   var size = amount / 100
@@ -70,17 +50,10 @@ export default Vue.component('Layout', {
       this.state.nodes = this.calcSplits()
     }
   },
-  beforeUpdate () {
-    if (!this.$refs.container) { return }
-    var els = this.$refs.container.querySelectorAll('[target-view]')
-    Array.from(els).forEach((e, i) => {
-      var el = this.$refs.container.querySelector('[src-view=' + e.getAttribute('target-view') + ']')
-      el.appendChild(e.children[0])
-    })
-  },
+
   methods: {
     // Transform input into internal format
-    calcSplits () {
+    calcSplits() {
       const root = []
       const tree = Tree.from(root)
       const walk = (node) => {
@@ -97,8 +70,9 @@ export default Vue.component('Layout', {
 
       return root
     },
+
     // wait on this
-    onSplitResize (e, split, size) {
+    onSplitResize(e, split, size) {
       const nodeId = split.props['node-id']
       this.setState(ps => {
         const node = Tree.from(ps.nodes).findById(nodeId)
@@ -106,7 +80,8 @@ export default Vue.component('Layout', {
         return ps
       })
     },
-    previewPane (attach, targetDom, amount) {
+
+    previewPane(attach, targetDom, amount) {
       if (attach === -1) {
         this.$refs.preview.style.opacity = 0
         return
@@ -143,7 +118,8 @@ export default Vue.component('Layout', {
         this.$refs.preview.style[k] = previewPos[k] + 'px'
       }
     },
-    onViewDragStart (e) { // We could pass dom here?
+
+    onViewDragStart(e) { // We could pass dom here?
       if (e.button !== 0) return
 
       const nodeIdAttr = e.target.hasAttribute('node-id')
@@ -195,7 +171,7 @@ export default Vue.component('Layout', {
       document.addEventListener('mouseup', this.onViewDrop)
     },
 
-    onViewDrag (e) {
+    onViewDrag(e) {
       if (e.button !== 0) return
       e.preventDefault()
       e.stopPropagation()
@@ -229,7 +205,8 @@ export default Vue.component('Layout', {
       }
       this.previewPane(attach, viewDom)
     },
-    onViewDrop (e) {
+
+    onViewDrop(e) {
       if (e.button !== 0) return
       document.removeEventListener('mousemove', this.onViewDrag)
       document.removeEventListener('mouseup', this.onViewDrop)
@@ -251,21 +228,14 @@ export default Vue.component('Layout', {
       var node = tree.findById(nodeId)
       tree.attachChild(node, attach, this.drag.node)
       this.drag = null
-    }
-
+    }    
   },
-  render () {
-    // DOM VUE/REACT HACK
-    this.$nextTick(() => {
-      this.$emit('layout:begin')
-      var els = this.$refs.container.querySelectorAll('[target-view]')
-      Array.from(els).forEach((e, i) => {
-        const srcView = this.$refs.container.querySelector('[src-view=' + e.getAttribute('target-view') + ']')
-        if (!srcView) return
-        e.appendChild(srcView.children[0])
-      })
-      this.$emit('layout:complete')
-    })
+
+  render () {   
+    
+    const onMouseDown = () => {
+      this.onViewDragStart()
+    }
 
     // Layout renderer, build children
     const walk = (node) => {
@@ -280,14 +250,14 @@ export default Vue.component('Layout', {
           )
         default:
           if (this.edit) {
-            return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId} onmousedown={this.onViewDragStart}></div>)
+            return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId} onmousedown={onMouseDown}></div>)
           }
           return (<div class={'view'} node-id={node.id} target-view={'view-' + node.viewId}></div>)
       }
     }
     const tree = walk(this.state.nodes[0])
     const layoutClass = [
-      'layout-container',
+      'split-layout-container',
       this.edit ? 'edit' : ''
     ]
     return (
@@ -307,12 +277,7 @@ export default Vue.component('Layout', {
               target-view={'view-' + this.drag.node.viewId}
             />
           }
-        </div>
-        <div style={{display: 'none'}}>
-          {this.$slots.default.filter(v => v.tag !== undefined).map((view, i) => {
-            return (<div key={view.key || i} src-view={'view-' + (view.key || i)}> {view} </div>)
-          })}
-        </div>
+        </div>        
       </div>
     )
   }

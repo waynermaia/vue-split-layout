@@ -1,4 +1,4 @@
-.layout-container {
+.layout-container, .split-layout-container {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
@@ -7,14 +7,14 @@
   height: 100%;
 }
 
-.layout-container > .preview {
+.split-layout-container > .preview {
   position: absolute;
   opacity: 0;
   margin: 0;
   pointer-events: none;
 }
 
-.layout-container > .views {
+.layout-container > .views, .split-layout-container > .views {
   display: flex;
   position: absolute;
   top: 0;
@@ -23,7 +23,7 @@
   left: 0;
 }
 
-.layout-container > .drag {
+.split-layout-container > .drag {
   position: absolute;
   margin: 0;
   padding: 0;
@@ -32,15 +32,15 @@
 }
 
 /* child of drag */
-.layout-container > .drag * {
+.split-layout-container > .drag * {
   pointer-events: none !important;
 }
 
-.layout-container > .drag.dragging {
+.split-layout-container > .drag.dragging {
   display: block;
 }
 
-.layout-container .drag > .view {
+.split-layout-container .drag > .view {
   height: 100%;
   width: 100%;
 }
